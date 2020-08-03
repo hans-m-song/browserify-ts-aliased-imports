@@ -47,18 +47,18 @@ const configureBrowserify = () => {
     },
   ];
 
-  return browserify().plugin(pathmodify, {mods});
+  return browserify().plugin(pathmodify, {mods}).plugin(tsify);
 };
 
 const compile = (src, dest) => {
   const b = configureBrowserify();
   const stream = fs.createWriteStream(dest);
 
-  b.add(src)
-    .plugin(tsify)
-    .bundle()
-    .on('err', (err) => {});
-  // .pipe(stream);
+  if (require.main === module) {
+    b.on('err', (err) => console.error);
+  }
+
+  b.add(src).bundle().pipe(stream);
 
   stream.on('finish', () => console.log('compiled', src, '->', dest));
 };
